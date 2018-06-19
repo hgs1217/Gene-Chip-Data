@@ -1,4 +1,8 @@
 temp/
+model/
+log/
+dl/run.py
+config.py
 
 # IDEA
 .idea/
