@@ -4,7 +4,7 @@
 import os
 
 from dl.nn import NN
-from preprocess.data_processor import read_data
+from preprocess.data_processor import read_data, read_labels
 
 
 def train(start_step=0, epoch_size=100, keep_pb=0.5, learning_rate=0.001,
@@ -14,7 +14,7 @@ def train(start_step=0, epoch_size=100, keep_pb=0.5, learning_rate=0.001,
     else:
         os.environ['CUDA_VISIBLE_DEVICES'] = '-1'  # use cpu only
 
-    ids, data = read_data()
+    ids, data = read_labels()
     raws, test_raws = data[:-3000], data[-3000:]
 
     nn = NN(raws, labels, test_raws, test_labels, epoch_size=epoch_size, loss_array=loss_array,
