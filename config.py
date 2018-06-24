@@ -6,3 +6,5 @@ CKPT_PATH = CKPT_PREFIX + "model.ckpt"
 LOG_PATH = "D:/Computer Science/Github/Protein-Subcellular-Location/log"
 
 DATASET_PATH = "D:/Computer Science/dataset/Gene_Chip_Data"
+DATA_FILE_PATH = DATASET_PATH + "/microarray.original.txt"
+DATA_SDRF_PATH = DATASET_PATH + "/E-TABM-185.sdrf.txt"
