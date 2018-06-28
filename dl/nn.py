@@ -10,7 +10,7 @@ from dl.utils import fc_layer, add_loss_summaries
 
 class NN:
     def __init__(self, raws, labels, test_raws, test_labels, keep_pb=0.5, epoch_size=100,
-                 learning_rate=0.001, loss_array=None, start_step=0, input_width=100, n_classes=2,
+                 learning_rate=0.001, loss_array=None, start_step=0, input_width=22283, n_classes=2,
                  open_summary=False, new_ckpt_internal=0):
         self._raws = raws
         self._labels = labels
@@ -34,15 +34,13 @@ class NN:
         self._global_step = tf.Variable(0, trainable=False)
 
     def _build_network(self, x, y, is_training):
-        flat = tf.reshape(x, [-1, 75])
-
-        fc1 = fc_layer(flat, 256, is_training, "fc1")
+        fc1 = fc_layer(x, 256, is_training, "fc1")
         fc2 = fc_layer(fc1, 1024, is_training, "fc2")
         fc2_drop = tf.nn.dropout(fc2, self._keep_prob)
         fc3 = fc_layer(fc2_drop, 1024, is_training, "fc3")
         fc3_drop = tf.nn.dropout(fc3, self._keep_prob)
         fc4 = fc_layer(fc3_drop, 256, is_training, "fc4")
-        fc5 = fc_layer(fc4, 1, is_training, "fc5", relu_flag=False)
+        fc5 = fc_layer(fc4, self._classes, is_training, "fc5", relu_flag=False)
 
         out = fc5
         loss = tf.reduce_mean(tf.reduce_sum(tf.abs((y - out) / y), reduction_indices=[1]))
@@ -65,6 +63,10 @@ class NN:
             train_op = tf.no_op(name='train')
 
         return train_op
+
+    def _print_class_accu(self, loss, accu):
+        for i in range(self._classes):
+            print("\tclass %d, loss %g, accu %g", i, loss[i], accu[i])
 
     def train(self):
         config = tf.ConfigProto()
@@ -95,8 +97,8 @@ class NN:
             for step in range(self._start_step + 1, self._start_step + self._epoch_size + 1):
                 print("Training epoch %d/%d" % (step, self._start_step + self._epoch_size))
                 total_batch = len(self._raws)
-                epoch_loss = np.zeros(total_batch)
-                epoch_accu = np.zeros(total_batch)
+                epoch_loss = np.zeros(total_batch, self._classes)
+                epoch_accu = np.zeros(total_batch, self._classes)
 
                 for bat in range(total_batch):
                     batch_xs = self._raws[bat]

@@ -3,7 +3,6 @@
 import json
 
 import numpy as np
-
 from config import DATASET_PATH, DATA_FILE_PATH, DATA_SDRF_PATH, READ_LB_PATH
 
 
@@ -23,6 +22,7 @@ def read_data(data_file_path=DATA_FILE_PATH):
             line = line.split("\t")
             data[:, i] = np.array(list(map(lambda x: float(x), line[1:])))
 
+    data = np.transpose(data)
     print("Read data complete")
     print(data.shape)
     return ids, data
