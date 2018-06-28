@@ -23,7 +23,6 @@ def read_data(data_file_path=DATA_FILE_PATH):
             line = line.split("\t")
             data[:, i] = np.array(list(map(lambda x: float(x), line[1:])))
 
-    data = np.transpose(data)
     print("Read data complete")
     print(data.shape)
     return ids, data
