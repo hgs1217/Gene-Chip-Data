@@ -44,7 +44,7 @@ def read_srdf(data_file_path=DATA_SDRF_PATH):
                     # 去掉双引号
                     if label_text[0] == '"': label_text = label_text[1:]
                     if label_text[-1] == '"': label_text = label_text[:-1]
-                labels.append(label_dict[label_text])
+                labels.append([label_dict[label_text]])
 
     print("Read labels complete")
     print(np.array(labels).shape)
