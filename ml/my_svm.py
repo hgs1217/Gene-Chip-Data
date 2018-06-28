@@ -10,9 +10,21 @@ import tensorflow as tf
 from config import CKPT_PATH
 
 
-class SVM:
+class MY_SVM:
     def __init__(self, raw_ids, raw_data, raw_labels, batch_size=None, input_dim=22283, alpha=0.01, learning_rate=0.01,
                  epoch_size=1000, start_step=0):
+        """
+        有点小问题，@hgs你有时间的话可以帮忙看下哪里写错了
+        :param raw_ids:
+        :param raw_data:
+        :param raw_labels:
+        :param batch_size:
+        :param input_dim:
+        :param alpha:
+        :param learning_rate:
+        :param epoch_size:
+        :param start_step:
+        """
         self.__ids = raw_ids
         self.__data = raw_data
         self.__labels = raw_labels
@@ -87,7 +99,7 @@ class SVM:
                 saver.save(sess, CKPT_PATH)
 
                 if step % 10 == 0:
-                    sess.run(tf.local_variables_initializer())
+                    # sess.run(tf.local_variables_initializer())
                     pre_loss, pre_accu, pre_f1 = sess.run([loss, accu, f1],
                                                           feed_dict={self.__X: test_data, self.__y: test_labels})
                     print(f'\tTesting epoch {step}/{self.__start_step + self.__epoch_size} finished, '

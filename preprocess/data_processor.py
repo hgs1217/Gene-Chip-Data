@@ -10,6 +10,7 @@ def read_data(data_file_path=DATA_FILE_PATH):
     """
     :param data_file_path:
     :return: ids -- list, shape (5896,), like ['Hyb_1', 'Hyb_2', ...]
+            data -- np array, shape (5896, 22283)
     """
     with open(data_file_path, "r") as f:
         id_line = f.readline()
@@ -29,6 +30,11 @@ def read_data(data_file_path=DATA_FILE_PATH):
 
 
 def read_srdf(data_file_path=DATA_SDRF_PATH):
+    """
+    :param data_file_path:
+    :return: ids -- list, shape (5896,), like ['Hyb_1', 'Hyb_2', ...]
+            labels -- list, shape (5896, 1) like [[1], [0], ..., [1]]
+    """
     with open(data_file_path, "r") as f:
         with open(READ_LB_PATH, 'r') as fl:
             label_dict = json.load(fl)      # 得到文本->0或1的dict
