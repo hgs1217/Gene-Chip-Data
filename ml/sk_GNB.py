@@ -1,29 +1,24 @@
 # -*- coding: utf-8 -*-  
 """
 @author: Suibin Sun
-@file: logistic_regression.py
-@time: 2018/6/28 23:37
+@file: sk_GNB.py
+@time: 2018/6/29 9:57
 """
 
+from sklearn.naive_bayes import GaussianNB
 import numpy as np
 from sklearn import metrics
 from sklearn.decomposition import PCA
-from sklearn.linear_model import LogisticRegression
 import pickle
 from config import CKPT_PREFIX
 
 
-class SK_LR:
+class SK_GNB:
     def __init__(self, raw_ids, raw_data, raw_labels, train=True, pk_name='sk_lr', pca=False, n_components=2000):
         self.__ids = raw_ids
         self.__data = raw_data
         self.__labels = [i[0] for i in raw_labels]
-        self.__clf = LogisticRegression(penalty='l1', dual=False, tol=1e-4, C=1.0, fit_intercept=True,
-                                        intercept_scaling=1, class_weight='balanced', random_state=None, solver='saga',
-                                        max_iter=1000, multi_class='ovr', verbose=1, warm_start=True, n_jobs=-1)
-        # self.__clf = LogisticRegression(penalty='l2', dual=False, tol=1e-4, C=1.0, fit_intercept=True,
-        #                                 intercept_scaling=1, class_weight='balanced', random_state=None, solver='sag',
-        #                                 max_iter=1000, multi_class='ovr', verbose=1, warm_start=True, n_jobs=-1)
+        self.__clf = GaussianNB()
         self.__train = train
         self.__pk_name = pk_name
         self.__pca = pca

@@ -1,0 +1,82 @@
+svm:
+Accuracy: 0.9786150712830958
+Precision: 0.9887640449438202
+Recall: 0.9649122807017544
+f1 score: 0.9766925638179799
+------------
+svm with pca 4000:
+Accuracy: 0.9175152749490835
+Precision: 0.851782363977486
+Recall: 0.9956140350877193
+f1 score: 0.9180990899898888
+------------
+svm with pca 2000:
+Accuracy: 0.8625254582484725
+Precision: 0.7724957555178268
+Recall: 0.9978070175438597
+f1 score: 0.8708133971291866
+------------
+svm with pca 200:
+Accuracy: 0.6384928716904277
+Precision: 1.0
+Recall: 0.22149122807017543
+f1 score: 0.3626570915619389
+
+==================================
+
+lr with max_iter 100, l1 norm:
+Accuracy: 0.5743380855397149
+Precision: 0.5510752688172043
+Recall: 0.44956140350877194
+f1 score: 0.4951690821256038
+------------
+lr with max_iter 5000, l1 norm(class_weight=None, warm_start=False):
+Accuracy: 0.5458248472505092
+Precision: 0.5108225108225108
+Recall: 0.5175438596491229
+f1 score: 0.514161220043573
+------------
+lr with max_iter 1000, l1 norm:
+Accuracy: 0.554989816700611
+Precision: 0.519916142557652
+Recall: 0.543859649122807
+f1 score: 0.5316184351554126
+------------
+lr with max_iter 1000, pca 2000, l1 norm:
+Accuracy: 0.5580448065173116
+Precision: 0.5215686274509804
+Recall: 0.5833333333333334
+f1 score: 0.5507246376811594
+------------
+lr with max_iter 1000, pca 2000, l1 norm, 以及不知道调了什么参:
+(penalty='l1', dual=False, tol=1e-4, C=1.0, fit_intercept=True, intercept_scaling=1, class_weight='balanced',
+random_state=None, solver='saga', max_iter=1000, multi_class='ovr', verbose=1, warm_start=True, n_jobs=-1)
+Accuracy: 0.9786150712830958
+Precision: 0.9822616407982262
+Recall: 0.9714912280701754
+f1 score: 0.9768467475192943
+
+Accuracy: 0.9816700610997964
+Precision: 0.9845132743362832
+Recall: 0.9758771929824561
+f1 score: 0.9801762114537446
+------------
+lr with max_iter 1000, pca 2000, l2 norm:
+Accuracy: 0.5519348268839104
+Precision: 0.5158730158730159
+Recall: 0.5701754385964912
+f1 score: 0.5416666666666666
+
+==================================
+
+GNB without pca:
+Accuracy: 0.8788187372708758
+Precision: 0.8336633663366336
+Recall: 0.9232456140350878
+f1 score: 0.8761706555671176
+------------
+GNB with pca 2000:
+Accuracy: 0.7586558044806517
+Precision: 0.7576470588235295
+Recall: 0.706140350877193
+f1 score: 0.7309875141884222
