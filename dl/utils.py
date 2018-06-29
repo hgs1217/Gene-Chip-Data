@@ -18,10 +18,6 @@ def add_loss_summaries(total_loss):
     losses = tf.get_collection('losses')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
 
-    for l in losses + [total_loss]:
-        tf.summary.scalar(l.op.name + ' (raw)', l)
-        tf.summary.scalar(l.op.name, loss_averages.average(l))
-
     return loss_averages_op
 
 
@@ -91,9 +87,9 @@ def weighted_loss(lgts, lbs, loss_array):
         logits = lgts + epsilon
 
         cross_entropy = -tf.reduce_sum(tf.multiply(labels * tf.log(tf.nn.softmax(logits) + epsilon),
-                                                   np.array(loss_array)), axis=[2])
-        cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy', axis=0)
-        return cross_entropy_mean
+                                                   np.array(loss_array)), name='cross_entropy', axis=[0])
+        # cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy', axis=0)
+        return cross_entropy
 
 
 def norm_layer(x, lsize, bias=1.0, alpha=0.001 / 9, beta=0.75):
