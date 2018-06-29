@@ -4,13 +4,15 @@
 @file: sk_GNB.py
 @time: 2018/6/29 9:57
 """
-
+from sklearn.model_selection import ShuffleSplit
 from sklearn.naive_bayes import GaussianNB
 import numpy as np
 from sklearn import metrics
 from sklearn.decomposition import PCA
 import pickle
 from config import CKPT_PREFIX
+from ml.plot import plot_learning_curve
+import matplotlib.pyplot as plt
 
 
 class SK_GNB:
@@ -56,6 +58,10 @@ class SK_GNB:
         else:
             with open(CKPT_PREFIX + self.__pk_name + '.pk', 'rb') as f:
                 self.__clf = pickle.load(f)
+                plot_learning_curve(self.__clf, 'Learning Curves (Gaussian Naive Bayes)', self.__data, self.__labels,
+                                    cv=6)
+                plt.show()
+
         pred_labels = self.__clf.predict(test_data)
         print(f'Accuracy: {metrics.accuracy_score(test_labels,pred_labels)}')
         print(f'Precision: {metrics.precision_score(test_labels,pred_labels)}')
