@@ -86,7 +86,7 @@ def weighted_loss(lgts, lbs, loss_array):
         labels = lbs
         logits = lgts + epsilon
 
-        cross_entropy = -tf.reduce_sum(tf.multiply(labels * tf.log(tf.nn.softmax(logits) + epsilon),
+        cross_entropy = -tf.reduce_mean(tf.multiply(labels * tf.log(tf.nn.softmax(logits) + epsilon),
                                                    np.array(loss_array)), name='cross_entropy', axis=[0])
         # cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy', axis=0)
         return cross_entropy
@@ -94,3 +94,25 @@ def weighted_loss(lgts, lbs, loss_array):
 
 def norm_layer(x, lsize, bias=1.0, alpha=0.001 / 9, beta=0.75):
     return tf.nn.lrn(x, lsize, bias=bias, alpha=alpha, beta=beta)
+
+
+def fast_hist(a, b, n):
+    k = (a >= 0) & (a < n)
+    return np.bincount(n * a[k].astype(int) + b[k], minlength=n ** 2).reshape(n, n)
+
+
+def per_class_acc(predictions, label_tensor):
+    labels = label_tensor
+    size, num_class = predictions.shape[0], predictions.shape[1]
+    hist = np.zeros((num_class, num_class))
+    for i in range(size):
+        hist += fast_hist(labels[i].argmax(0).flatten(), predictions[i].argmax(0).flatten(), num_class)
+    acc_total = np.diag(hist).sum() / hist.sum()
+    iu = np.diag(hist) / (hist.sum(1) + hist.sum(0) - np.diag(hist))
+    acc = [0 for _ in range(num_class)]
+    for ii in range(num_class):
+        if float(hist.sum(1)[ii]) == 0:
+            acc[ii] = 0.0
+        else:
+            acc[ii] = np.diag(hist)[ii] / float(hist.sum(1)[ii])
+    return np.nanmean(acc_total), np.nanmean(iu), acc

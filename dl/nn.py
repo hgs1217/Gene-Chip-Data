@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 
 from config import CKPT_PATH, LOG_PATH, CKPT_PREFIX
-from dl.utils import fc_layer, add_loss_summaries, weighted_loss
+from dl.utils import fc_layer, add_loss_summaries, weighted_loss, per_class_acc
 
 
 class NN:
@@ -43,8 +43,7 @@ class NN:
 
         out = norm5
         loss = weighted_loss(out, y, self._loss_array)
-        accu = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(out, 1), tf.argmax(y, 1)), tf.float32), axis=0)
-        return loss, out, accu
+        return loss, out
 
     def _train_set(self, total_loss, global_step):
         loss_averages_op = add_loss_summaries(total_loss)
@@ -63,16 +62,24 @@ class NN:
 
         return train_op
 
-    def _print_class_accu(self, loss, accu):
-        for i in range(self._classes):
-            print("\tclass %d, loss %g, accu %g" % (i, loss[i], accu))
+    def _get_network_measure(self, y, out):
+        accu = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(out, 1), tf.argmax(y, 1)), tf.float32), axis=0)
+
+        pn = tf.cast(2 * tf.argmax(out, 1) + tf.argmax(y, 1), tf.int32)
+        counter = tf.cast(tf.concat(tf.map_fn(lambda t: tf.bincount(t, minlength=4), pn), axis=0), tf.float32)
+        epsilon = 1e-10 * tf.ones(tf.shape(counter[:, 0]))
+        precision = counter[:, 0] / (counter[:, 0] + counter[:, 2] + epsilon)
+        recall = counter[:, 0] / (counter[:, 0] + counter[:, 1] + epsilon)
+        f1 = 2 * precision * recall / (precision + recall + epsilon)
+
+        return accu, precision, recall, f1
 
     def train(self):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
 
         with tf.Session(config=config) as sess:
-            loss, prediction, accu = self._build_network(self._x, self._y, self._is_training)
+            loss, prediction = self._build_network(self._x, self._y, self._is_training)
             train_op = self._train_set(loss, self._global_step)
 
             saver = tf.train.Saver()
@@ -86,36 +93,42 @@ class NN:
             for step in range(self._start_step + 1, self._start_step + self._epoch_size + 1):
                 print("Training epoch %d/%d" % (step, self._start_step + self._epoch_size))
 
-                _, pd, epoch_loss, epoch_accu = sess.run(
-                    [train_op, prediction, loss, accu],
+                _, pd, epoch_loss = sess.run(
+                    [train_op, prediction, loss],
                     feed_dict={self._x: np.array(self._raws),
                                self._y: np.array(self._labels),
                                self._keep_prob: self._keep_pb,
                                self._is_training: True})
 
-                print("Training epoch %d/%d finished, loss %g, accu %g" %
-                      (step, self._start_step + self._epoch_size, np.mean(epoch_loss), epoch_accu))
-                self._print_class_accu(epoch_loss, epoch_accu)
+                accu_total, iu, accuracy = per_class_acc(pd, self._labels)
+                print("Training epoch %d/%d finished, loss %g, accu %g, iu %g" %
+                      (step, self._start_step + self._epoch_size, np.mean(epoch_loss), accu_total, np.mean(iu)))
+                for ii in range(self._classes):
+                    print("\tclass # %d accuracy = %f " % (ii, accuracy[ii]))
                 print("==============================================================")
 
                 if step % 1 == 0:
                     print("Testing epoch %d/%d" % (step, self._start_step + self._epoch_size))
 
-                    pd, test_loss, test_accu = sess.run(
-                        [prediction, loss, accu],
+                    tpd, test_loss = sess.run(
+                        [prediction, loss],
                         feed_dict={self._x: np.array(self._test_raws),
                                    self._y: np.array(self._test_labels),
                                    self._keep_prob: 1.0,
                                    self._is_training: False})
 
-                    print("Testing epoch %d/%d finished, loss %g, accu %g" %
-                          (step, self._start_step + self._epoch_size, np.mean(test_loss), test_accu))
-                    self._print_class_accu(test_loss, test_accu)
+                    test_accu_total, test_iu, test_accuracy = per_class_acc(tpd, self._test_labels)
+                    print("Testing epoch %d/%d finished, loss %g, accu %g, iu %g" %
+                          (step, self._start_step + self._epoch_size, np.mean(test_loss), test_accu_total,
+                           np.mean(test_iu)))
+                    for ii in range(self._classes):
+                        print("\tclass # %d accuracy = %f " % (ii, test_accuracy[ii]))
                     print("==============================================================")
 
                 print("saving model.....")
                 if self._new_ckpt_internal == 0:
-                    saver.save(sess, CKPT_PATH)
+                    if step % 10 == 0:
+                        saver.save(sess, CKPT_PATH)
                 elif self._new_ckpt_internal > 0:
                     path = "{0}{1}/model.ckpt".format(CKPT_PREFIX, int((step - 1) / self._new_ckpt_internal))
                     saver.save(sess, path)
