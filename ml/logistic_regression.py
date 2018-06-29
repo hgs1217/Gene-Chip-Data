@@ -1,29 +1,33 @@
 # -*- coding: utf-8 -*-  
 """
 @author: Suibin Sun
-@file: tf_svm.py
-@time: 2018/6/28 15:51
+@file: logistic_regression.py
+@time: 2018/6/28 23:37
 """
 
 import numpy as np
-from sklearn import svm, metrics
+from sklearn import metrics
 from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
 import pickle
 from config import CKPT_PREFIX
 
 
-class SK_SVM:
-    def __init__(self, raw_ids, raw_data, raw_labels, train=True, kernel='rbf', pca=False, n_components=2000,
-                 pk_name='sk_svm'):
+class SK_LR:
+    def __init__(self, raw_ids, raw_data, raw_labels, train=True, pk_name='sk_lr', pca=False, n_components=2000):
         self.__ids = raw_ids
         self.__data = raw_data
         self.__labels = [i[0] for i in raw_labels]
-        self.__clf = svm.SVC(C=1.0, kernel=kernel, gamma='auto', probability=False, shrinking=True, tol=1e-3,
-                             verbose=True, max_iter=-1, random_state=None)
+        # self.__clf = LogisticRegression(penalty='l1', dual=False, tol=1e-4, C=1.0, fit_intercept=True,
+        #                                 intercept_scaling=1, class_weight='balanced', random_state=None, solver='saga',
+        #                                 max_iter=1000, multi_class='ovr', verbose=1, warm_start=True, n_jobs=-1)
+        self.__clf = LogisticRegression(penalty='l2', dual=False, tol=1e-4, C=1.0, fit_intercept=True,
+                                        intercept_scaling=1, class_weight='balanced', random_state=None, solver='sag',
+                                        max_iter=1000, multi_class='ovr', verbose=1, warm_start=True, n_jobs=-1)
         self.__train = train
+        self.__pk_name = pk_name
         self.__pca = pca
         self.__n_components = n_components
-        self.__pk_name = pk_name + str(n_components) if pca else pk_name
 
     def split(self):
         train_ids, train_data, train_labels, test_ids, test_data, test_labels = [], [], [], [], [], []
