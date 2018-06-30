@@ -18,7 +18,7 @@ def read_data(data_file_path=DATA_FILE_PATH):
         data = np.zeros((5896, 22283), dtype=np.float32)  # 形状 [5896, 22283]
         for i in range(22283):
             line = f.readline()
-            if i % 1000 == 0:
+            if i % 100 == 0:
                 print("Reading line %d" % i)
             line = line.split("\t")
             data[:, i] = np.array(list(map(lambda x: float(x), line[1:])))
