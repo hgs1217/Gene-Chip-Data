@@ -10,7 +10,7 @@ from sklearn import svm, metrics
 from sklearn.decomposition import PCA
 import pickle
 from config import CKPT_PREFIX
-from ml.plot import plot_learning_curve
+from ml.plot import plot_learning_curve, plot_roc
 import matplotlib.pyplot as plt
 
 
@@ -20,7 +20,7 @@ class SK_SVM:
         self.__ids = raw_ids
         self.__data = raw_data
         self.__labels = [i[0] for i in raw_labels]
-        self.__clf = svm.SVC(C=1.0, kernel=kernel, gamma='auto', probability=False, shrinking=True, tol=1e-3,
+        self.__clf = svm.SVC(C=1.0, kernel=kernel, gamma='auto', probability=True, shrinking=True, tol=1e-3,
                              verbose=True, max_iter=-1, random_state=None)
         self.__train = train
         self.__pca = pca
@@ -59,12 +59,15 @@ class SK_SVM:
         else:
             with open(CKPT_PREFIX + self.__pk_name + '.pk', 'rb') as f:
                 self.__clf = pickle.load(f)
-                plot_learning_curve(self.__clf, 'Learning Curves (SVM)', self.__data, self.__labels,
-                                    cv=6)
-                plt.savefig('svm.jpg')
-                plt.show()
+                # plot_learning_curve(self.__clf, 'Learning Curves (SVM)', self.__data, self.__labels,
+                #                     cv=6)
+                # plt.savefig('svm.jpg')
+                y_score = self.__clf.predict_proba(test_data)
+                y_score = np.array(y_score)[:, 1]
+                plot_roc(test_labels, y_score, 'SVM')
+                # plt.show()
+        print('\tSVM')
         pred_labels = self.__clf.predict(test_data)
-        print(pred_labels[:5])
         print(f'Accuracy: {metrics.accuracy_score(test_labels,pred_labels)}')
         print(f'Precision: {metrics.precision_score(test_labels,pred_labels)}')
         print(f'Recall: {metrics.recall_score(test_labels,pred_labels)}')

@@ -7,6 +7,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.datasets import load_digits
@@ -81,6 +82,21 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
              label="Cross-validation score")
 
     plt.legend(loc="best")
+    return plt
+
+
+def plot_roc(y_test, y_score, mod):
+    fpr, tpr, threshold = roc_curve(y_test, y_score)
+    roc_auc = auc(fpr, tpr)
+    # plt.figure()
+    plt.plot(fpr, tpr, label=f'{mod} ROC curve (area = {roc_auc:0.4f})')
+    # plt.plot([0, 1], [0, 1], color='navy', lw=1, linestyle='--')
+    # plt.xlim([0.0, 1.0])
+    # plt.ylim([0.0, 1.0])
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')
+    # plt.title(f'Receiver operating characteristic {title}')
+    # plt.legend(loc='best')
     return plt
 
 

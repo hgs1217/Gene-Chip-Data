@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 import pickle
 from config import CKPT_PREFIX
-from ml.plot import plot_learning_curve
+from ml.plot import plot_learning_curve, plot_roc
 import matplotlib.pyplot as plt
 
 
@@ -63,10 +63,14 @@ class SK_LR:
         else:
             with open(CKPT_PREFIX + self.__pk_name + '.pk', 'rb') as f:
                 self.__clf = pickle.load(f)
-                plot_learning_curve(self.__clf, 'Learning Curves (Logistic Regression)', self.__data, self.__labels,
-                                    cv=6)
-                plt.savefig('logistic.jpg')
-                plt.show()
+                # plot_learning_curve(self.__clf, 'Learning Curves (Logistic Regression)', self.__data, self.__labels,
+                #                     cv=6)
+                # plt.savefig('logistic.jpg')
+                # plt.show()
+                y_score = self.__clf.predict_proba(test_data)
+                y_score = np.array(y_score)[:, 1]
+                plot_roc(test_labels, y_score, 'LR','')
+        print('\tLR')
         pred_labels = self.__clf.predict(test_data)
         print(f'Accuracy: {metrics.accuracy_score(test_labels,pred_labels)}')
         print(f'Precision: {metrics.precision_score(test_labels,pred_labels)}')
