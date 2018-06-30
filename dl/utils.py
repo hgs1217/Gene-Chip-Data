@@ -88,7 +88,6 @@ def weighted_loss(lgts, lbs, loss_array):
 
         cross_entropy = -tf.reduce_mean(tf.multiply(labels * tf.log(tf.nn.softmax(logits) + epsilon),
                                                    np.array(loss_array)), name='cross_entropy', axis=[0])
-        # cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy', axis=0)
         return cross_entropy
 
 

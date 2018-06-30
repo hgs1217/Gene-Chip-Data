@@ -32,12 +32,12 @@ class NN:
         self._global_step = tf.Variable(0, trainable=False)
 
     def _build_network(self, x, y, is_training):
-        fc1 = fc_layer(x, 256, is_training, "fc1")
+        fc1 = fc_layer(x, 512, is_training, "fc1")
         fc2 = fc_layer(fc1, 1024, is_training, "fc2")
         fc2_drop = tf.nn.dropout(fc2, self._keep_prob)
         fc3 = fc_layer(fc2_drop, 1024, is_training, "fc3")
         fc3_drop = tf.nn.dropout(fc3, self._keep_prob)
-        fc4 = fc_layer(fc3_drop, 256, is_training, "fc4")
+        fc4 = fc_layer(fc3_drop, 512, is_training, "fc4")
         fc5 = fc_layer(fc4, self._classes, is_training, "fc5", relu_flag=False)
         norm5 = tf.nn.softmax(tf.nn.sigmoid(fc5))
 
@@ -62,18 +62,6 @@ class NN:
 
         return train_op
 
-    def _get_network_measure(self, y, out):
-        accu = tf.reduce_mean(tf.cast(tf.equal(tf.argmax(out, 1), tf.argmax(y, 1)), tf.float32), axis=0)
-
-        pn = tf.cast(2 * tf.argmax(out, 1) + tf.argmax(y, 1), tf.int32)
-        counter = tf.cast(tf.concat(tf.map_fn(lambda t: tf.bincount(t, minlength=4), pn), axis=0), tf.float32)
-        epsilon = 1e-10 * tf.ones(tf.shape(counter[:, 0]))
-        precision = counter[:, 0] / (counter[:, 0] + counter[:, 2] + epsilon)
-        recall = counter[:, 0] / (counter[:, 0] + counter[:, 1] + epsilon)
-        f1 = 2 * precision * recall / (precision + recall + epsilon)
-
-        return accu, precision, recall, f1
-
     def train(self):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
@@ -90,6 +78,16 @@ class NN:
             else:
                 sess.run(tf.global_variables_initializer())
 
+            summary_writer = tf.summary.FileWriter(LOG_PATH, sess.graph)
+            train_loss_pl = tf.placeholder(tf.float32)
+            test_loss_pl = tf.placeholder(tf.float32)
+            train_accu_pl = tf.placeholder(tf.float32)
+            test_accu_pl = tf.placeholder(tf.float32)
+            train_loss_summary = tf.summary.scalar("Train_loss", train_loss_pl)
+            test_loss_summary = tf.summary.scalar("Test_loss", test_loss_pl)
+            train_accu_summary = tf.summary.scalar("Train_accuracy", train_accu_pl)
+            test_accu_summary = tf.summary.scalar("Test_accuracy", test_accu_pl)
+
             for step in range(self._start_step + 1, self._start_step + self._epoch_size + 1):
                 print("Training epoch %d/%d" % (step, self._start_step + self._epoch_size))
 
@@ -101,6 +99,11 @@ class NN:
                                self._is_training: True})
 
                 accu_total, iu, accuracy = per_class_acc(pd, self._labels)
+                loss_str, accu_str = sess.run([train_loss_summary, train_accu_summary],
+                                              feed_dict={train_loss_pl: np.mean(epoch_loss), train_accu_pl: accu_total})
+                summary_writer.add_summary(loss_str, step)
+                summary_writer.add_summary(accu_str, step)
+
                 print("Training epoch %d/%d finished, loss %g, accu %g, iu %g" %
                       (step, self._start_step + self._epoch_size, np.mean(epoch_loss), accu_total, np.mean(iu)))
                 for ii in range(self._classes):
@@ -118,6 +121,11 @@ class NN:
                                    self._is_training: False})
 
                     test_accu_total, test_iu, test_accuracy = per_class_acc(tpd, self._test_labels)
+                    loss_t, accu_t = sess.run([test_loss_summary, test_accu_summary],
+                                              feed_dict={test_loss_pl: np.mean(test_loss), test_accu_pl: test_accu_total})
+                    summary_writer.add_summary(loss_t, step)
+                    summary_writer.add_summary(accu_t, step)
+
                     print("Testing epoch %d/%d finished, loss %g, accu %g, iu %g" %
                           (step, self._start_step + self._epoch_size, np.mean(test_loss), test_accu_total,
                            np.mean(test_iu)))

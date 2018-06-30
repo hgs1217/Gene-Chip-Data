@@ -26,7 +26,7 @@ def split(ids, data, labels):
     return (train_ids, train_data, train_labels), (test_ids, test_data, test_labels), loss_array
 
 
-def train(start_step=0, epoch_size=500, keep_pb=0.5, learning_rate=0.001,
+def train(start_step=0, epoch_size=100, keep_pb=0.5, learning_rate=0.001,
           new_ckpt_internal=0, gpu=True):
     if gpu:
         os.environ['CUDA_VISIBLE_DEVICES'] = '0'
